@@ -19,11 +19,20 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../examples/index.html'));
 });
 
+app.get('/preview', (req, res) => {
+    res.sendFile(path.join(__dirname, '../examples/template-preview.html'));
+});
+
 app.get('/templates', (req, res) => {
     res.json({
         templates: [
-            { name: '标准标题模板', path: '/src/templates/template-standard.html' },
-            { name: '内容幻灯片模板', path: '/src/templates/template-content.html' }
+            { name: '标准标题模板', path: '/src/templates/template-standard.html', type: 'standard' },
+            { name: '内容幻灯片模板', path: '/src/templates/template-content.html', type: 'content' },
+            { name: '商务风格模板', path: '/src/templates/template-business.html', type: 'business' },
+            { name: '科技风格模板', path: '/src/templates/template-tech.html', type: 'tech' },
+            { name: '创意风格模板', path: '/src/templates/template-creative.html', type: 'creative' },
+            { name: '教育风格模板', path: '/src/templates/template-education.html', type: 'education' },
+            { name: '简约风格模板', path: '/src/templates/template-minimal.html', type: 'minimal' }
         ]
     });
 });
