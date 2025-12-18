@@ -49,10 +49,11 @@ class TemplateParser {
         lines.forEach(line => {
             const trimmedLine = line.trim();
             if (trimmedLine.startsWith('-')) {
-                const keyValue = trimmedLine.substring(1).trim().split(':');
-                if (keyValue.length === 2) {
-                    const key = keyValue[0].trim();
-                    const value = keyValue[1].trim();
+                // 使用正则表达式匹配第一个冒号作为分隔符
+                const match = trimmedLine.substring(1).trim().match(/^([^:]+):\s*(.+)$/);
+                if (match) {
+                    const key = match[1].trim();
+                    const value = match[2].trim();
                     metadata[key] = value;
                 }
             }

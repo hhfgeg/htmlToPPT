@@ -70,9 +70,10 @@ class HTMLToPPTConverter {
             lines.forEach(line => {
                 const trimmedLine = line.trim();
                 if (trimmedLine.startsWith('-')) {
-                    const parts = trimmedLine.substring(1).trim().split(':');
-                    if (parts.length === 2) {
-                        metadata[parts[0].trim()] = parts[1].trim();
+                    // 使用正则表达式匹配第一个冒号作为分隔符
+                    const match = trimmedLine.substring(1).trim().match(/^([^:]+):\s*(.+)$/);
+                    if (match) {
+                        metadata[match[1].trim()] = match[2].trim();
                     }
                 }
             });
