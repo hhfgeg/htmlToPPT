@@ -147,46 +147,6 @@
           </div>
         </div>
       </section>
-
-      <!-- 特性介绍区域 -->
-      <section class="features-section">
-        <div class="section-header">
-          <h2>为什么选择我们</h2>
-          <p>强大的功能让您的演示文稿创作更加高效</p>
-        </div>
-        
-        <div class="features-grid">
-          <div class="feature-card">
-            <span class="feature-icon">⚡</span>
-            <h3>快速创建</h3>
-            <p>基于模板快速创建专业演示文稿，节省大量设计时间</p>
-          </div>
-          <div class="feature-card">
-            <span class="feature-icon">🎨</span>
-            <h3>精美设计</h3>
-            <p>现代化的设计风格，让您的演示文稿更加吸引人</p>
-          </div>
-          <div class="feature-card">
-            <span class="feature-icon">📱</span>
-            <h3>响应式布局</h3>
-            <p>完美适配各种屏幕尺寸，确保最佳观看体验</p>
-          </div>
-          <div class="feature-card">
-            <span class="feature-icon">📤</span>
-            <h3>一键导出</h3>
-            <p>支持PPTX格式导出，方便分享和演示</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 快速开始 -->
-      <div class="quick-start-section">
-        <h3>快速开始</h3>
-        <button class="new-presentation-btn" @click="createNewPresentation">
-          <span class="icon">➕</span>
-          创建空白演示文稿
-        </button>
-      </div>
     </main>
 
     <!-- 应用底部 -->
