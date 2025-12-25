@@ -18,10 +18,10 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f5f5f5;
+  overflow-y: auto;
 }
 
 .app {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 </style>
