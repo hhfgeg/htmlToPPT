@@ -215,171 +215,18 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { PPTData, defaultTheme } from '../../types/index'
+import { defaultTheme } from '../../types/index'
+import { defaultTemplate, businessTemplate, educationTemplate, blankTemplate } from '../../templates'
 
 const router = useRouter()
 
 // 当前选择的模板
-const currentTemplate = ref('default')
+const currentTemplate = ref('默认模板')
 
-// 预定义模板
 const templates = reactive([
-  {
-    name: '默认模板',
-    description: '简洁的默认模板',
-    data: {
-      title: '默认演示文稿',
-      author: '用户',
-      theme: defaultTheme,
-      slides: [
-        {
-          id: 'slide-1',
-          type: 'title',
-          layout: 'title',
-          title: '欢迎使用HTML to PPT',
-          content: [
-            {
-              type: 'text',
-              text: '基于Vue 3的PPT创建工具',
-              style: {
-                fontSize: 24,
-                fontFamily: 'Arial, sans-serif',
-                color: '#7f8c8d',
-                fontWeight: 'normal',
-                textAlign: 'center'
-              },
-              position: { x: 200, y: 300, width: 400, height: 40 }
-            }
-          ],
-          background: {
-            type: 'gradient',
-            value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-          }
-        }
-      ]
-    }
-  },
-  {
-    name: '商务报告',
-    description: '专业的商务报告模板',
-    data: {
-      title: '商务报告',
-      author: '用户',
-      theme: {
-        name: '商务蓝',
-        colors: {
-          primary: '#3498db',
-          secondary: '#2980b9',
-          accent: '#e74c3c',
-          background: '#f8f9fa',
-          text: '#2c3e50'
-        },
-        fonts: {
-          title: 'Arial, sans-serif',
-          body: 'Arial, sans-serif'
-        }
-      },
-      slides: [
-        {
-          id: 'slide-1',
-          type: 'title',
-          layout: 'title',
-          title: '商务报告',
-          content: [
-            {
-              type: 'text',
-              text: '季度业务分析',
-              style: {
-                fontSize: 24,
-                fontFamily: 'Arial, sans-serif',
-                color: '#7f8c8d',
-                fontWeight: 'normal',
-                textAlign: 'center'
-              },
-              position: { x: 200, y: 300, width: 400, height: 40 }
-            }
-          ]
-        },
-        {
-          id: 'slide-2',
-          type: 'content',
-          layout: 'two-column',
-          title: '业绩概览',
-          content: [
-            {
-              type: 'text',
-              text: '主要指标',
-              style: {
-                fontSize: 18,
-                fontFamily: 'Arial, sans-serif',
-                color: '#2c3e50',
-                fontWeight: 'bold',
-                textAlign: 'left'
-              },
-              position: { x: 50, y: 100, width: 300, height: 30 }
-            },
-            {
-              type: 'text',
-              text: '• 收入增长: +15%\n• 用户增长: +25%\n• 市场份额: 12%',
-              style: {
-                fontSize: 14,
-                fontFamily: 'Arial, sans-serif',
-                color: '#34495e',
-                fontWeight: 'normal',
-                textAlign: 'left',
-                lineHeight: 1.5
-              },
-              position: { x: 50, y: 150, width: 300, height: 120 }
-            }
-          ]
-        }
-      ]
-    }
-  },
-  {
-    name: '教育课件',
-    description: '适合教学使用的课件模板',
-    data: {
-      title: '教学课件',
-      author: '教师',
-      theme: {
-        name: '教育绿',
-        colors: {
-          primary: '#27ae60',
-          secondary: '#2ecc71',
-          accent: '#e67e22',
-          background: '#f9f9f9',
-          text: '#2c3e50'
-        },
-        fonts: {
-          title: 'Arial, sans-serif',
-          body: 'Arial, sans-serif'
-        }
-      },
-      slides: [
-        {
-          id: 'slide-1',
-          type: 'title',
-          layout: 'title',
-          title: '课程名称',
-          content: [
-            {
-              type: 'text',
-              text: '第X章 课程内容',
-              style: {
-                fontSize: 20,
-                fontFamily: 'Arial, sans-serif',
-                color: '#7f8c8d',
-                fontWeight: 'normal',
-                textAlign: 'center'
-              },
-              position: { x: 200, y: 300, width: 400, height: 30 }
-            }
-          ]
-        }
-      ]
-    }
-  }
+  defaultTemplate,
+  businessTemplate,
+  educationTemplate
 ])
 
 // 选择模板
@@ -410,30 +257,10 @@ const useTemplate = (template: any) => {
 
 // 创建空白演示文稿
 const createNewPresentation = () => {
-  const blankPPT: PPTData = {
-    title: '空白演示文稿',
-    author: '用户',
-    description: '新建的演示文稿',
-    theme: defaultTheme,
-    slides: [
-      {
-        id: 'slide-1',
-        type: 'title',
-        layout: 'title',
-        title: '演示文稿标题',
-        content: [],
-        background: {
-          type: 'color',
-          value: '#ffffff'
-        }
-      }
-    ]
-  }
-  
   router.push({
     path: '/editor',
     query: { 
-      template: JSON.stringify(blankPPT)
+      template: JSON.stringify(blankTemplate.data)
     }
   })
 }

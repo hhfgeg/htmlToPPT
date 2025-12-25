@@ -1,0 +1,5 @@
+export { defaultTemplate } from './default'
+export { businessTemplate } from './business'
+export { educationTemplate } from './education'
+export { blankTemplate } from './blank'
+export type { Template } from './theme'
