@@ -39,6 +39,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PPTUnifiedEditor from './PPTUnifiedEditor.vue'
 import { PPTData, defaultTheme } from '../../types/index'
+import { PPTManager } from '../../index'
 
 const router = useRouter()
 const route = useRoute()
@@ -111,10 +112,14 @@ const handleSave = () => {
 }
 
 // 导出PPT
-const handleExport = () => {
-  console.log('导出PPT:', pptData.value)
-  // 这里可以添加导出逻辑
-  alert('PPT导出功能已触发!')
+const handleExport = async () => {
+  try {
+    const pptManager = new PPTManager(pptData.value)
+    await pptManager.exportToPPTX(pptData.value.title || '演示文稿')
+  } catch (error) {
+    console.error('导出失败:', error)
+    alert('导出失败，请检查控制台错误信息')
+  }
 }
 
 // 返回首页

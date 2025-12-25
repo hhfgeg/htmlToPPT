@@ -37,13 +37,6 @@
       </div>
       
       <div class="toolbar-right">
-        <!-- 导出功能 -->
-        <button @click="exportPPTX" class="export-btn" title="导出为PPTX">
-          <span class="icon">📥</span> 导出PPTX
-        </button>
-        <button @click="savePPT" class="save-btn" title="保存项目">
-          <span class="icon">💾</span> 保存
-        </button>
       </div>
     </div>
 
@@ -197,9 +190,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed } from 'vue'
 import { PPTData, Slide, SlideContent, defaultTheme } from '../../types/index'
-import { PPTManager } from '../../index'
 
 interface Props {
   pptData: PPTData
@@ -208,8 +200,6 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:pptData': [PPTData]
-  save: []
-  export: []
 }>()
 
 // 当前选中的幻灯片索引
@@ -411,21 +401,6 @@ const formatText = (text: string) => {
 
 const getContentKey = (content: SlideContent, index: number) => {
   return `${content.type}-${index}-${Date.now()}`
-}
-
-// 导出和保存
-const exportPPTX = async () => {
-  try {
-    const pptManager = new PPTManager(props.pptData)
-    await pptManager.exportToPPTX('我的演示文稿')
-    emit('export')
-  } catch (error) {
-    console.error('导出失败:', error)
-  }
-}
-
-const savePPT = () => {
-  emit('save')
 }
 </script>
 
