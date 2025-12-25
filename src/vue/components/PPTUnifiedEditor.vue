@@ -86,9 +86,10 @@
               <div 
                 v-for="(content, contentIndex) in slide.content" 
                 :key="getContentKey(content, contentIndex)"
-                :class="['content-element', { selected: selectedContentIndex === contentIndex }]"
+                :class="['content-element', { selected: selectedContentIndex === contentIndex, dragging: isDragging && selectedContentIndex === contentIndex }]"
                 :style="getContentStyle(content)"
                 @click="selectContent(contentIndex)"
+                @mousedown="startDrag($event, contentIndex)"
               >
                 <!-- 文本内容 -->
                 <div v-if="content.type === 'text'" class="text-element">
@@ -190,7 +191,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { PPTData, Slide, SlideContent, defaultTheme } from '../../types/index'
 
 interface Props {
@@ -208,6 +209,13 @@ const currentSlideIndex = ref(0)
 const selectedContentIndex = ref<number | null>(null)
 // 是否正在编辑内容
 const isEditingContent = ref(false)
+// 是否正在拖动
+const isDragging = ref(false)
+// 拖动相关变量
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const initialX = ref(0)
+const initialY = ref(0)
 
 // 计算当前选中的幻灯片
 const selectedSlide = computed(() => {
@@ -402,6 +410,54 @@ const formatText = (text: string) => {
 const getContentKey = (content: SlideContent, index: number) => {
   return `${content.type}-${index}-${Date.now()}`
 }
+
+// 拖动功能
+const startDrag = (event: MouseEvent, contentIndex: number) => {
+  if (isEditingContent.value) return
+  
+  event.preventDefault()
+  selectedContentIndex.value = contentIndex
+  isDragging.value = true
+  
+  dragStartX.value = event.clientX
+  dragStartY.value = event.clientY
+  
+  const content = selectedSlide.value?.content[contentIndex]
+  if (content) {
+    initialX.value = content.position.x
+    initialY.value = content.position.y
+  }
+}
+
+const onDrag = (event: MouseEvent) => {
+  if (!isDragging.value || selectedContentIndex.value === null) return
+  
+  const dx = event.clientX - dragStartX.value
+  const dy = event.clientY - dragStartY.value
+  
+  const newData = { ...props.pptData }
+  const content = newData.slides[currentSlideIndex.value].content[selectedContentIndex.value]
+  
+  content.position.x = Math.max(0, initialX.value + dx)
+  content.position.y = Math.max(0, initialY.value + dy)
+  
+  emit('update:pptData', newData)
+}
+
+const endDrag = () => {
+  isDragging.value = false
+}
+
+// 添加全局事件监听
+onMounted(() => {
+  window.addEventListener('mousemove', onDrag)
+  window.addEventListener('mouseup', endDrag)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', endDrag)
+})
 </script>
 
 <style scoped>
@@ -642,6 +698,13 @@ const getContentKey = (content: SlideContent, index: number) => {
 .content-element.selected {
   border-color: #e74c3c;
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3);
+}
+
+.content-element.dragging {
+  cursor: move;
+  opacity: 0.8;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 .text-element {
