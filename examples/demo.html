@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML to PPT 演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .button:hover {
+            background: #2980b9;
+        }
+        
+        .button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .preview-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .slide-navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HTML to PPT 演示</h1>
+            <p>基于统一数据结构的PPT渲染和导出系统</p>
+        </div>
+        
+        <div class="controls">
+            <button class="button" onclick="renderPPT()">渲染PPT</button>
+            <button class="button" onclick="exportPPTX()">导出PPTX</button>
+            <button class="button" onclick="loadExample()">加载示例</button>
+            
+            <div class="slide-navigation">
+                <button class="button" onclick="prevSlide()">上一页</button>
+                <span id="slide-info">幻灯片: 0/0</span>
+                <button class="button" onclick="nextSlide()">下一页</button>
+            </div>
+            
+            <div id="status" class="status"></div>
+        </div>
+        
+        <div class="preview-container">
+            <div id="ppt-preview"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { PPTManager } from '../src/index.js';
+        
+        // 示例PPT数据
+        const examplePPTData = {
+            title: "项目进展汇报",
+            author: "张三",
+            description: "2024年第一季度项目进展",
+            theme: {
+                name: "现代商务",
+                colors: {
+                    primary: "#2c3e50",
+                    secondary: "#3498db",
+                    accent: "#e74c3c",
+                    background: "#ecf0f1",
+                    text: "#2c3e50"
+                },
+                fonts: {
+                    title: "Arial, sans-serif",
+                    body: "Arial, sans-serif"
+                }
+            },
+            slides: [
+                {
+                    id: "slide-1",
+                    type: "title",
+                    layout: "title",
+                    title: "项目进展汇报",
+                    content: [
+                        {
+                            type: "text",
+                            text: "2024年第一季度",
+                            style: {
+                                fontSize: 24,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#7f8c8d",
+                                fontWeight: "normal",
+                                textAlign: "center"
+                            },
+                            position: { x: 200, y: 300, width: 400, height: 40 }
+                        }
+                    ],
+                    background: {
+                        type: "gradient",
+                        value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    }
+                },
+                {
+                    id: "slide-2",
+                    type: "content",
+                    layout: "two-column",
+                    title: "项目进展",
+                    content: [
+                        {
+                            type: "text",
+                            text: "已完成工作",
+                            style: {
+                                fontSize: 20,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#2c3e50",
+                                fontWeight: "bold",
+                                textAlign: "left"
+                            },
+                            position: { x: 50, y: 100, width: 250, height: 30 }
+                        },
+                        {
+                            type: "text",
+                            text: "• 需求分析完成\n• 技术架构设计\n• 前端框架搭建\n• 数据库设计",
+                            style: {
+                                fontSize: 16,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#34495e",
+                                fontWeight: "normal",
+                                textAlign: "left",
+                                lineHeight: 1.5
+                            },
+                            position: { x: 50, y: 150, width: 250, height: 120 }
+                        },
+                        {
+                            type: "text",
+                            text: "下一步计划",
+                            style: {
+                                fontSize: 20,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#2c3e50",
+                                fontWeight: "bold",
+                                textAlign: "left"
+                            },
+                            position: { x: 400, y: 100, width: 250, height: 30 }
+                        },
+                        {
+                            type: "text",
+                            text: "• 后端API开发\n• 前端界面实现\n• 测试与部署\n• 用户培训",
+                            style: {
+                                fontSize: 16,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#34495e",
+                                fontWeight: "normal",
+                                textAlign: "left",
+                                lineHeight: 1.5
+                            },
+                            position: { x: 400, y: 150, width: 250, height: 120 }
+                        }
+                    ]
+                },
+                {
+                    id: "slide-3",
+                    type: "content",
+                    layout: "full-width",
+                    title: "数据统计",
+                    content: [
+                        {
+                            type: "chart",
+                            chartType: "bar",
+                            data: {
+                                labels: ["1月", "2月", "3月", "4月"],
+                                datasets: [{
+                                    label: "完成度",
+                                    data: [30, 60, 80, 95]
+                                }]
+                            },
+                            style: {
+                                width: 600,
+                                height: 300,
+                                colors: ["#3498db", "#2ecc71", "#e74c3c", "#f39c12"]
+                            },
+                            position: { x: 180, y: 150, width: 600, height: 300 }
+                        }
+                    ]
+                },
+                {
+                    id: "slide-4",
+                    type: "content",
+                    layout: "centered",
+                    title: "总结",
+                    content: [
+                        {
+                            type: "text",
+                            text: "项目整体进展顺利，已完成前期准备工作，即将进入核心开发阶段。我们将继续按照计划推进，确保项目按时交付。",
+                            style: {
+                                fontSize: 18,
+                                fontFamily: "Arial, sans-serif",
+                                color: "#2c3e50",
+                                fontWeight: "normal",
+                                textAlign: "center",
+                                lineHeight: 1.6
+                            },
+                            position: { x: 100, y: 200, width: 700, height: 100 }
+                        },
+                        {
+                            type: "shape",
+                            shape: "rectangle",
+                            style: {
+                                width: 200,
+                                height: 50,
+                                fill: "#3498db",
+                                stroke: "#2980b9",
+                                strokeWidth: 2
+                            },
+                            position: { x: 350, y: 350, width: 200, height: 50 }
+                        },
+                        {
+                            type: "text",
+                            text: "感谢观看",
+                            style: {
+                                fontSize: 16,
+                                fontFamily: "Arial, sans-serif",
+                                color: "white",
+                                fontWeight: "bold",
+                                textAlign: "center"
+                            },
+                            position: { x: 350, y: 360, width: 200, height: 30 }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        let pptManager = null;
+        let currentSlideIndex = 0;
+
+        // 全局函数
+        window.renderPPT = function() {
+            const container = document.getElementById('ppt-preview');
+            if (!pptManager) {
+                setStatus('请先加载示例数据', 'error');
+                return;
+            }
+            
+            try {
+                pptManager.renderToHTML(container);
+                updateSlideInfo();
+                setStatus('PPT渲染成功', 'success');
+            } catch (error) {
+                setStatus('渲染失败: ' + error.message, 'error');
+            }
+        };
+
+        window.exportPPTX = async function() {
+            if (!pptManager) {
+                setStatus('请先加载示例数据', 'error');
+                return;
+            }
+            
+            try {
+                setStatus('正在导出PPTX文件...', 'success');
+                await pptManager.exportToPPTX('项目汇报.pptx');
+                setStatus('PPTX文件导出成功', 'success');
+            } catch (error) {
+                setStatus('导出失败: ' + error.message, 'error');
+            }
+        };
+
+        window.loadExample = function() {
+            pptManager = new PPTManager(examplePPTData);
+            const info = pptManager.getInfo();
+            setStatus(`已加载示例数据: ${info.title} (${info.slideCount}页幻灯片)`, 'success');
+        };
+
+        window.prevSlide = function() {
+            if (pptManager && currentSlideIndex > 0) {
+                currentSlideIndex--;
+                pptManager.goToSlide(currentSlideIndex);
+                updateSlideInfo();
+            }
+        };
+
+        window.nextSlide = function() {
+            if (pptManager && currentSlideIndex < pptManager.getInfo().slideCount - 1) {
+                currentSlideIndex++;
+                pptManager.goToSlide(currentSlideIndex);
+                updateSlideInfo();
+            }
+        };
+
+        // 辅助函数
+        function setStatus(message, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function updateSlideInfo() {
+            if (pptManager) {
+                const info = pptManager.getInfo();
+                document.getElementById('slide-info').textContent = 
+                    `幻灯片: ${currentSlideIndex + 1}/${info.slideCount}`;
+            }
+        }
+
+        // 页面加载时自动加载示例
+        window.addEventListener('DOMContentLoaded', () => {
+            loadExample();
+        });
+    </script>
+</body>
+</html>
