@@ -8,42 +8,8 @@
 
     <!-- 主内容区域 -->
     <main class="app-main">
-      <!-- 模式切换 -->
-      <div class="mode-switcher">
-        <button 
-          @click="currentMode = 'view'" 
-          :class="['mode-btn', { active: currentMode === 'view' }]"
-        >
-          查看模式
-        </button>
-        <button 
-          @click="currentMode = 'edit'" 
-          :class="['mode-btn', { active: currentMode === 'edit' }]"
-        >
-          编辑模式
-        </button>
-      </div>
-
-      <!-- 内容区域 -->
-      <div class="content-area">
-        <!-- 查看模式 -->
-        <PPTRenderer 
-          v-if="currentMode === 'view'" 
-          :ppt-data="currentPPTData"
-          @edit="currentMode = 'edit'"
-        />
-        
-        <!-- 编辑模式 -->
-        <PPTEditor 
-          v-else
-          :ppt-data="currentPPTData"
-          @update:ppt-data="handlePPTUpdate"
-          @cancel="currentMode = 'view'"
-        />
-      </div>
-
       <!-- 模板选择 -->
-      <div class="template-section" v-if="currentMode === 'view'">
+      <div class="template-section">
         <h3>选择模板</h3>
         <div class="template-grid">
           <div 
@@ -65,6 +31,17 @@
           </div>
         </div>
       </div>
+
+      <!-- 统一编辑器 -->
+      <div class="unified-editor-section">
+        <h3>PPT编辑器</h3>
+        <PPTUnifiedEditor 
+          :ppt-data="currentPPTData"
+          @update:ppt-data="handlePPTUpdate"
+          @save="handleSave"
+          @export="handleExport"
+        />
+      </div>
     </main>
 
     <!-- 应用底部 -->
@@ -76,12 +53,8 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import PPTRenderer from './components/PPTRenderer.vue'
-import PPTEditor from './components/PPTEditor.vue'
+import PPTUnifiedEditor from './components/PPTUnifiedEditor.vue'
 import { PPTData, defaultTheme } from '../types/index'
-
-// 当前模式：view（查看）或 edit（编辑）
-const currentMode = ref<'view' | 'edit'>('view')
 
 // 当前PPT数据
 const currentPPTData = ref<PPTData>({
@@ -281,11 +254,24 @@ const handlePPTUpdate = (newData: PPTData) => {
   currentPPTData.value = newData
 }
 
+// 保存PPT
+const handleSave = () => {
+  console.log('保存PPT数据:', currentPPTData.value)
+  // 这里可以添加保存到本地存储或服务器的逻辑
+  alert('PPT已保存!')
+}
+
+// 导出PPT
+const handleExport = () => {
+  console.log('导出PPT:', currentPPTData.value)
+  // 这里可以添加导出逻辑
+  alert('PPT导出功能已触发!')
+}
+
 // 加载模板
 const loadTemplate = (template: any) => {
   currentPPTData.value = template.data
   currentTemplate.value = template.name
-  currentMode.value = 'view'
 }
 </script>
 
@@ -325,45 +311,23 @@ const loadTemplate = (template: any) => {
   overflow: hidden;
 }
 
-.mode-switcher {
-  display: flex;
-  justify-content: center;
-  padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid #e0e0e0;
-  flex-shrink: 0;
-}
-
-.mode-btn {
-  padding: 10px 20px;
-  margin: 0 8px;
-  border: 2px solid #3498db;
-  background: white;
-  color: #3498db;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s;
-  min-width: 100px;
-}
-
-.mode-btn:hover {
-  background: #3498db;
-  color: white;
-  transform: translateY(-1px);
-}
-
-.mode-btn.active {
-  background: #3498db;
-  color: white;
-}
-
-.content-area {
+.unified-editor-section {
   flex: 1;
   background: white;
-  overflow: auto;
-  min-height: 400px;
+  overflow: hidden;
+  min-height: 600px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.unified-editor-section h3 {
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5em;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .template-section {
