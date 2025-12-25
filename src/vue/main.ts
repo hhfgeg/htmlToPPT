@@ -1,8 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router/index'
 
 // 创建Vue应用
 const app = createApp(App)
+
+// 使用路由
+app.use(router)
 
 // 全局配置（可选）
 app.config.errorHandler = (err, instance, info) => {
