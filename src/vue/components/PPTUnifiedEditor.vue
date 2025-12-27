@@ -413,6 +413,12 @@ const getContentKey = (content: SlideContent, index: number) => {
 
 // 拖动功能
 const startDrag = (event: MouseEvent, contentIndex: number) => {
+  // 检查是否点击了控制按钮
+  const target = event.target as HTMLElement
+  if (target.closest('.content-controls')) {
+    return // 如果是控制按钮，不开始拖动
+  }
+  
   if (isEditingContent.value) return
   
   event.preventDefault()
