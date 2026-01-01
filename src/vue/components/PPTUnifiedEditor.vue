@@ -90,7 +90,19 @@
                 :style="getContentStyle(content)"
                 @click="selectContent(contentIndex)"
                 @mousedown="startDrag($event, contentIndex)"
+                @dblclick="content.type === 'text' ? editContent(contentIndex) : null"
               >
+                <!-- 调整大小控制点 -->
+                <div v-if="selectedContentIndex === contentIndex" class="resize-controls">
+                  <div class="resize-handle top-left" @mousedown.stop="startResize($event, contentIndex, 'top-left')"></div>
+                  <div class="resize-handle top" @mousedown.stop="startResize($event, contentIndex, 'top')"></div>
+                  <div class="resize-handle top-right" @mousedown.stop="startResize($event, contentIndex, 'top-right')"></div>
+                  <div class="resize-handle right" @mousedown.stop="startResize($event, contentIndex, 'right')"></div>
+                  <div class="resize-handle bottom-right" @mousedown.stop="startResize($event, contentIndex, 'bottom-right')"></div>
+                  <div class="resize-handle bottom" @mousedown.stop="startResize($event, contentIndex, 'bottom')"></div>
+                  <div class="resize-handle bottom-left" @mousedown.stop="startResize($event, contentIndex, 'bottom-left')"></div>
+                  <div class="resize-handle left" @mousedown.stop="startResize($event, contentIndex, 'left')"></div>
+                </div>
                 <!-- 文本内容 -->
                 <div v-if="content.type === 'text'" class="text-element">
                   <div v-if="isEditingContent && selectedContentIndex === contentIndex" class="edit-mode">
@@ -99,6 +111,7 @@
                       class="text-edit-input"
                       @blur="finishEditing"
                       @keydown.enter="finishEditing"
+                      @keydown.ctrl.enter="finishEditing"
                       autofocus
                     ></textarea>
                   </div>
@@ -211,11 +224,18 @@ const selectedContentIndex = ref<number | null>(null)
 const isEditingContent = ref(false)
 // 是否正在拖动
 const isDragging = ref(false)
+// 是否正在调整大小
+const isResizing = ref(false)
+// 调整大小的方向
+const resizeDirection = ref<string>('')
 // 拖动相关变量
 const dragStartX = ref(0)
 const dragStartY = ref(0)
 const initialX = ref(0)
 const initialY = ref(0)
+// 初始宽高
+const initialWidth = ref(0)
+const initialHeight = ref(0)
 
 // 计算当前选中的幻灯片
 const selectedSlide = computed(() => {
@@ -415,8 +435,8 @@ const getContentKey = (content: SlideContent, index: number) => {
 const startDrag = (event: MouseEvent, contentIndex: number) => {
   // 检查是否点击了控制按钮
   const target = event.target as HTMLElement
-  if (target.closest('.content-controls')) {
-    return // 如果是控制按钮，不开始拖动
+  if (target.closest('.content-controls') || target.closest('.resize-handle')) {
+    return // 如果是控制按钮或调整大小手柄，不开始拖动
   }
   
   if (isEditingContent.value) return
@@ -454,15 +474,114 @@ const endDrag = () => {
   isDragging.value = false
 }
 
+// 调整大小功能
+const startResize = (event: MouseEvent, contentIndex: number, direction: string) => {
+  if (isEditingContent.value) return
+  
+  event.preventDefault()
+  selectedContentIndex.value = contentIndex
+  isResizing.value = true
+  resizeDirection.value = direction
+  
+  dragStartX.value = event.clientX
+  dragStartY.value = event.clientY
+  
+  const content = selectedSlide.value?.content[contentIndex]
+  if (content) {
+    initialX.value = content.position.x
+    initialY.value = content.position.y
+    initialWidth.value = content.position.width
+    initialHeight.value = content.position.height
+  }
+}
+
+const onResize = (event: MouseEvent) => {
+  if (!isResizing.value || selectedContentIndex.value === null) return
+  
+  const dx = event.clientX - dragStartX.value
+  const dy = event.clientY - dragStartY.value
+  
+  const newData = { ...props.pptData }
+  const content = newData.slides[currentSlideIndex.value].content[selectedContentIndex.value]
+  
+  let newX = initialX.value
+  let newY = initialY.value
+  let newWidth = initialWidth.value
+  let newHeight = initialHeight.value
+  
+  // 根据方向调整大小
+  switch (resizeDirection.value) {
+    case 'top-left':
+      newX = initialX.value + dx
+      newY = initialY.value + dy
+      newWidth = Math.max(20, initialWidth.value - dx)
+      newHeight = Math.max(20, initialHeight.value - dy)
+      break
+    case 'top':
+      newY = initialY.value + dy
+      newHeight = Math.max(20, initialHeight.value - dy)
+      break
+    case 'top-right':
+      newY = initialY.value + dy
+      newWidth = Math.max(20, initialWidth.value + dx)
+      newHeight = Math.max(20, initialHeight.value - dy)
+      break
+    case 'right':
+      newWidth = Math.max(20, initialWidth.value + dx)
+      break
+    case 'bottom-right':
+      newWidth = Math.max(20, initialWidth.value + dx)
+      newHeight = Math.max(20, initialHeight.value + dy)
+      break
+    case 'bottom':
+      newHeight = Math.max(20, initialHeight.value + dy)
+      break
+    case 'bottom-left':
+      newX = initialX.value + dx
+      newWidth = Math.max(20, initialWidth.value - dx)
+      newHeight = Math.max(20, initialHeight.value + dy)
+      break
+    case 'left':
+      newX = initialX.value + dx
+      newWidth = Math.max(20, initialWidth.value - dx)
+      break
+  }
+  
+  // 更新位置和大小
+  content.position.x = Math.max(0, newX)
+  content.position.y = Math.max(0, newY)
+  content.position.width = newWidth
+  content.position.height = newHeight
+  
+  emit('update:pptData', newData)
+}
+
+const endResize = () => {
+  isResizing.value = false
+  resizeDirection.value = ''
+}
+
 // 添加全局事件监听
 onMounted(() => {
-  window.addEventListener('mousemove', onDrag)
-  window.addEventListener('mouseup', endDrag)
+  window.addEventListener('mousemove', (event) => {
+    onDrag(event)
+    onResize(event)
+  })
+  window.addEventListener('mouseup', () => {
+    endDrag()
+    endResize()
+  })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('mousemove', onDrag)
-  window.removeEventListener('mouseup', endDrag)
+  window.removeEventListener('mousemove', (event) => {
+    onDrag(event)
+    onResize(event)
+  })
+  window.removeEventListener('mouseup', () => {
+    endDrag()
+    endResize()
+  })
 })
 </script>
 
@@ -480,72 +599,118 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  padding: 8px 20px;
   background: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   flex-shrink: 0;
+  height: 50px;
 }
 
 .toolbar-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.toolbar-left::-webkit-scrollbar {
+  height: 3px;
+}
+
+.toolbar-left::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.toolbar-left::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
 }
 
 .tool-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid #dee2e6;
   background: white;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s;
-  font-size: 13px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #495057;
 }
 
 .tool-btn:hover:not(:disabled) {
-  background: #f0f0f0;
-  border-color: #3498db;
+  background: #f8f9fa;
+  border-color: #007bff;
+  color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.15);
 }
 
 .tool-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 .nav-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: 15px;
+  gap: 6px;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #e9ecef;
+  background: #fafafa;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 .nav-btn {
-  padding: 6px 10px;
-  border: 1px solid #ddd;
+  padding: 5px 9px;
+  border: 1px solid #dee2e6;
   background: white;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  color: #495057;
+  transition: all 0.2s ease;
+  min-width: 32px;
 }
 
 .nav-btn:hover:not(:disabled) {
-  background: #3498db;
+  background: #007bff;
   color: white;
+  border-color: #007bff;
+  transform: translateY(-1px);
+}
+
+.nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .slide-counter {
   font-weight: 600;
-  color: #2c3e50;
-  font-size: 13px;
+  color: #212529;
+  font-size: 12px;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  min-width: 50px;
+  text-align: center;
 }
 
 .toolbar-right {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .export-btn, .save-btn {
@@ -702,8 +867,8 @@ onUnmounted(() => {
 }
 
 .content-element.selected {
-  border-color: #e74c3c;
-  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3);
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
 }
 
 .content-element.dragging {
@@ -776,6 +941,81 @@ onUnmounted(() => {
 .delete-btn {
   background: #e74c3c;
   color: white;
+}
+
+/* 调整大小控制样式 */
+.resize-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #3498db;
+  border: 1px solid white;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 八个方向的调整大小手柄 */
+.resize-handle.top-left {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.top {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resize-handle.top-right {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.right {
+  top: 50%;
+  right: -4px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resize-handle.bottom-right {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.bottom {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resize-handle.bottom-left {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.left {
+  top: 50%;
+  left: -4px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
 }
 
 .properties-panel {

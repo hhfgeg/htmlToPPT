@@ -133,85 +133,100 @@ const goBack = () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: #f8f9fa;
 }
 
 .editor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 10px 20px;
   background: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
+  height: 60px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .back-btn {
-  padding: 8px 16px;
-  background: #95a5a6;
+  padding: 6px 14px;
+  background: #6c757d;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .back-btn:hover {
-  background: #7f8c8d;
+  background: #5a6268;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .header-left h1 {
   margin: 0;
-  color: #2c3e50;
-  font-size: 1.5em;
+  color: #212529;
+  font-size: 1.3em;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
 }
 
 .header-right {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .save-btn, .export-btn {
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+  justify-content: center;
 }
 
 .save-btn {
-  background: #3498db;
+  background: #007bff;
   color: white;
 }
 
 .save-btn:hover {
-  background: #2980b9;
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
 .export-btn {
-  background: #27ae60;
+  background: #28a745;
   color: white;
 }
 
 .export-btn:hover {
-  background: #219a52;
+  background: #1e7e34;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
 .editor-main {
